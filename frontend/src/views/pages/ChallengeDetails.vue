@@ -1,14 +1,16 @@
 <template>
   <!-- Modal with the challenge details -->
   <CModal
+    backdrop="static"
     :title="modalTitle"
     color="info"
     :centered="true"
     size="lg"
     :show.sync="showModal"
   >
-
-  <template #header> <h5 class="pt-1"> {{modalTitle}} </h5> </template>
+    <template #header>
+      <h5 class="pt-1">{{ modalTitle }}</h5>
+    </template>
 
     <div class="p-4">
       <!-- Coins image -->
@@ -95,17 +97,18 @@
     </template>
 
     <!-- Toast message to be displayed -->
-    <!-- <CToaster :autohide="3000">
+    <CToaster :autohide="3000">
       <template v-for="toastMessage in toastMessages">
         <CToast
           :key="toastMessage.id"
           :show="true"
           :header="toastMessage.header"
+          :color="toastMessage.color"
         >
           {{ toastMessage.content }}
         </CToast>
       </template>
-    </CToaster> -->
+    </CToaster>
   </CModal>
 </template>
 
@@ -131,6 +134,7 @@ export default {
       description: "",
       file: "",
       showModal: true,
+      toastMessages: [],
     };
   },
   filters: {
@@ -141,6 +145,19 @@ export default {
     },
   },
   methods: {
+    /**
+     * Adds a new toast message to the array when event occurred
+     */
+    addToastMessage(header, content, color) {
+      var id = this.toastMessages.length;
+      this.toastMessages.push({
+        id: id,
+        header: header,
+        content: content,
+        color: color,
+      });
+    },
+
     closeModal(mode) {
       if (mode == "close") {
         this.$emit("closed");
@@ -164,6 +181,15 @@ export default {
       formData.append("challenge", this.challenge.id);
       formData.append("description", this.description);
 
+      if (!this.file) {
+        this.addToastMessage(
+          "Submitting stopped",
+          "You did not attach any file!",
+          "danger"
+        );
+        return;
+      }
+
       axios({
         method: "post",
         url: `${this.api_url}/attempt/`,
@@ -178,11 +204,6 @@ export default {
           this.closeModal("submit");
         })
         .catch((error) => {
-          this.addToastMessage(
-            "Error",
-            "Something went wrong - your attempt could not be completed.",
-            "danger"
-          );
           console.log(error);
         });
     },

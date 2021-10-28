@@ -3,6 +3,7 @@
 </template>
 
 <script>
+document.title = "Motivo"
 export default {
   name: 'App'
 }

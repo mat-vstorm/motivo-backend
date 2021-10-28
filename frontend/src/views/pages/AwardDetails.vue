@@ -1,6 +1,7 @@
 <template>
   <!-- Modal with the challenge details -->
   <CModal
+    backdrop="static"
     :title="modalTitle"
     color="info"
     :centered="true"

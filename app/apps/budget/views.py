@@ -45,20 +45,28 @@ class BudgetManagementViewSet(viewsets.ModelViewSet):
     def create(self,request):
         """Handle upcoming request from user to create a new budget position."""
         # Get incoming parameters
-        budget_data = json.loads(request.data['budget_data'])
+        try:
+            budget_data = json.loads(request.data['budget_data'])
+        except Exception as e:
+            print(f"Exception while loading payload -> {e}")
+            return Response({"message":"Could not load payload data"}, status=status.HTTP_400_BAD_REQUEST)
         
         amount = int(budget_data['amount'])
         if amount > request.user.budget_left_gross:
             return Response({"message":"You don't have enough budget to perform this action"}, status=status.HTTP_400_BAD_REQUEST)
         
         # Create proper position in database
-        AnnualBudgetManagement.objects.create(user=request.user, 
+        try:
+            AnnualBudgetManagement.objects.create(user=request.user, 
                                             title=budget_data['title'], 
                                             category=budget_data['category'], 
                                             when=budget_data['when'], 
                                             amount=amount,
                                             comment=budget_data['comment'],
                                             file=request.data['file'])
+        except Exception as e:
+            print(f"Exception while -> {e}")
+            return Response({"message":"Could not load payload data"}, status=status.HTTP_400_BAD_REQUEST)
         
         # Take the budget from user's account
         request.user.budget_left_gross -= amount

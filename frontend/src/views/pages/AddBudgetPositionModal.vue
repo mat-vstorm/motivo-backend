@@ -91,17 +91,18 @@
     </template>
 
     <!-- Toast message to be displayed -->
-    <!-- <CToaster :autohide="3000">
+    <CToaster :autohide="3000">
       <template v-for="toastMessage in toastMessages">
         <CToast
           :key="toastMessage.id"
           :show="true"
           :header="toastMessage.header"
+          :color="toastMessage.color"
         >
           {{ toastMessage.content }}
         </CToast>
       </template>
-    </CToaster> -->
+    </CToaster>
   </CModal>
 </template>
 
@@ -126,6 +127,7 @@ export default {
         amount: 0,
         comment: "",
       },
+      toastMessages: [],
       file: null,
       selectCategoryOptions: [],
     };
@@ -134,6 +136,19 @@ export default {
     this.getAllCategories();
   },
   methods: {
+    /**
+     * Adds a new toast message to the array when event occurred
+     */
+    addToastMessage(header, content, color) {
+      var id = this.toastMessages.length;
+      this.toastMessages.push({
+        id: id,
+        header: header,
+        content: content,
+        color: color,
+      });
+    },
+
     /**
      * Get all the available budget categories from the server
      */
@@ -169,6 +184,14 @@ export default {
       const token = localStorage.getItem("user-token");
       const bearer = "Bearer " + token;
 
+      console.log("----------");
+      console.log(this.file);
+      
+      if (!file) {
+        this.addToastMessage("Error", "You did not attach a file!", "danger");
+        return;
+      }
+
       let formData = new FormData();
       formData.append("file", this.file);
       formData.append("budget_data", JSON.stringify(this.formData));
@@ -187,12 +210,7 @@ export default {
           this.closeModal("submit");
         })
         .catch((error) => {
-          this.addToastMessage(
-            "Error",
-            "Something went wrong - your attempt could not be completed.",
-            "danger"
-          );
-          console.log(error);
+          this.addToastMessage("Error", error.response.data.message, "danger");
         });
     },
   },
